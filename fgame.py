@@ -1,3 +1,13 @@
+#######################################################################################
+# First Pygame Game.
+# Honestly just playing around. Gonna use it for version management
+# Author: Andrew Troyer
+# Start Date: 6-8-21
+# Start Location: Visalia CA, USA
+#######################################################################################
+
+
+
 import pygame
 from pygame.locals import *
 
