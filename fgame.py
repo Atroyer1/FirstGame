@@ -43,25 +43,42 @@ class Player(pygame.sprite.Sprite):
         self.acc = vec(0, 0)
         
     def move(self):
-        self.acc = vec(0, 0)
+        self.acc = vec(0, 0.5)
 
+        #Checks to see if any keys are pressed and gets which keys.
         pressed_keys = pygame.key.get_pressed()
 
+        #Gives players left or right acceleration depending on left or right key press
         if pressed_keys[K_LEFT]:
             self.acc.x = -ACC
         if pressed_keys[K_RIGHT]:
             self.acc.x = ACC
 
+        #Fancy Shmancy movement
         self.acc.x += self.vel.x * FRIC
         self.vel += self.acc
         self.pos += self.vel + 0.5 * self.acc
 
+        #Garbage Wrapping imo
         if self.pos.x > WIDTH:
             self.pos.x = 0
         if self.pos.x < 0:
             self.pos.x = WIDTH
 
         self.rect.midbottom = self.pos
+
+    def jump(self):
+        hits = pygame.sprite.spritecollide(self, platforms, False)
+        if hits:
+            self.vel.y = -15
+
+    def update(self):
+        #Collision Detection
+        hits = pygame.sprite.spritecollide(P1, platforms, False)
+        if P1.vel.y > 0:
+            if hits:
+                self.pos.y= hits[0].rect.top + 1
+                self.vel.y = 0
 
 class Platform(pygame.sprite.Sprite):
     def __init__(self):
@@ -75,22 +92,29 @@ class Platform(pygame.sprite.Sprite):
 PT1 = Platform()
 P1 = Player()
 
-# Sprite Existance ######################################################
+# Sprite Groups #########################################################
 
 all_sprites = pygame.sprite.Group()
 all_sprites.add(P1)
 all_sprites.add(PT1)
 
+platforms = pygame.sprite.Group()
+platforms.add(PT1)
+
 # Game Loop ###########################################################################
 
 while True:
     for event in pygame.event.get():
-        if event.type == QUIT:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                P1.jump()
+        if event.type == QUIT or ((event.type == pygame.KEYDOWN) and (event.key == pygame.K_q)):
             pygame.quit()
             sys.exit()
 
     displaysurface.fill((0, 0, 0))
     P1.move()
+    P1.update()
 
     for entity in all_sprites:
         displaysurface.blit(entity.surf, entity.rect)
