@@ -10,6 +10,8 @@
 
 import pygame
 from pygame.locals import *
+import sys
+import random
 
 # Link, Start! ########################################################################
 
@@ -38,7 +40,7 @@ class Player(pygame.sprite.Sprite):
         self.surf.fill((128, 255, 40))
         self.rect = self.surf.get_rect()
         #Player Movement Variables
-        self.pos = vec((15, 385))
+        self.pos = vec((10, 360))
         self.vel = vec(0, 0)
         self.acc = vec(0, 0)
         
@@ -80,16 +82,34 @@ class Player(pygame.sprite.Sprite):
                 self.pos.y= hits[0].rect.top + 1
                 self.vel.y = 0
 
-class Platform(pygame.sprite.Sprite):
+class platform(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.surf = pygame.Surface((WIDTH, 20))
+        self.surf = pygame.Surface((random.randint(50, 100), 12))
         self.surf.fill((255, 0, 0))
-        self.rect = self.surf.get_rect(center = (WIDTH/2, HEIGHT - 10))
+        self.rect = self.surf.get_rect(center = (random.randint(0, WIDTH - 10), random.randint(0, HEIGHT-3)))
+
+
+# Random Platform Generation #####
+
+def plat_gen():
+    while len(platforms) < 7 :
+        width = random.randrange(50,100)
+        p = platform()
+        p.rect.center = (random.randrange(0, WIDTH - width), random.randrange(-50, 0))
+        platforms.add(p)
+        all_sprites.add(p)
 
 # Object Obstantiation ##################################################
 
-PT1 = Platform()
+# Main platform Generation #######
+PT1 = platform()
+PT1.surf = pygame.Surface((WIDTH, 20))
+PT1.surf.fill((255, 0, 0))
+PT1.rect = PT1.surf.get_rect(center = (WIDTH/2, HEIGHT - 10))
+
+
+# Player Generation #########
 P1 = Player()
 
 # Sprite Groups #########################################################
@@ -100,6 +120,15 @@ all_sprites.add(PT1)
 
 platforms = pygame.sprite.Group()
 platforms.add(PT1)
+
+
+# Game Init ##################################################################
+
+# Random Platform Generation
+for x in range(random.randint(5,6)):
+    pl = platform()
+    platforms.add(pl)
+    all_sprites.add(pl)
 
 # Game Loop ###########################################################################
 
@@ -115,6 +144,14 @@ while True:
     displaysurface.fill((0, 0, 0))
     P1.move()
     P1.update()
+    plat_gen()
+
+    if P1.rect.top <= HEIGHT / 3:
+        P1.pos.y+= abs(P1.vel.y) #Get rid of the abs for fun testing
+        for plat in platforms:
+            plat.rect.y+= abs(P1.vel.y)
+            if plat.rect.top >= HEIGHT:
+                plat.kill()
 
     for entity in all_sprites:
         displaysurface.blit(entity.surf, entity.rect)
